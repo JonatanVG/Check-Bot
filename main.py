@@ -63,9 +63,14 @@ async def on_guild_remove(guild):
 import roblox_funcs.command_main as command_main
 @bot.tree.command(name="bgc_run", description="Runs a background check on the specified user(s).")
 @commands.is_owner()
-async def bgc_run(inter: discord.Interaction, usernames: str):
+@app_commands.describe(type="Generate award date graph? (Significantly increases time to complete.)")
+@app_commands.choices(type = [
+    app_commands.Choice(name="Yes", value="B"),
+    app_commands.Choice(name="No", value="A")
+])
+async def bgc_run(inter: discord.Interaction, usernames: str, type: str):
     usernames_list = [username.strip() for username in usernames.split(",") if username.strip()]
-    await command_main.main(inter, usernames_list)
+    await command_main.main(inter, usernames_list, type)
 ### Bot commands end
 
 

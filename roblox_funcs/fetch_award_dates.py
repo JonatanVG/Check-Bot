@@ -12,7 +12,7 @@ async def fetch_award_dates(user_id: str, badges: list[dict], session, sem) -> l
     dates = []
     badge_ids = list(badges.values())
     url = f"https://badges.roblox.com/v1/users/{user_id}/badges/awarded-dates"
-    STEP = 75  # Adjust the step size as needed, we can't do too many at once
+    STEP = 60  # Adjust the step size as needed, we can't do too many at once
     async with sem:
         for i in range(0, len(badge_ids), STEP):
             params = {"badgeIds": badge_ids[i:i + STEP]}
@@ -24,7 +24,7 @@ async def fetch_award_dates(user_id: str, badges: list[dict], session, sem) -> l
                     async with session.get(url, params=params) as response:
                         if response.status == 429:
                             retry_after = min(retry_after * 1.5, 60)
-                            STEP = max(10, int(STEP * 0.8))
+                            STEP = max(30, int(STEP * 0.8))
                             print(f"Rate limited for user {user_id}. "
                                   f"Sleeping {retry_after}s, STEP={STEP}")
                             await asyncio.sleep(retry_after)
@@ -40,7 +40,7 @@ async def fetch_award_dates(user_id: str, badges: list[dict], session, sem) -> l
 
                         await asyncio.sleep(random.uniform(0.8, 1.3))
 
-                        STEP = min(50, int(STEP * 1.1))
+                        STEP = min(60, int(STEP * 1.1))
                         retry_after = 2
                         print(f"Success: STEP={STEP}, retry_after={retry_after}")
                         break

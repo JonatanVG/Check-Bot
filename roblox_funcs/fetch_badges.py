@@ -33,31 +33,3 @@ async def fetch_multiple_users_badges(user_ids, limit=5):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch_badges(uid, session, sem) for uid in user_ids]
         return await asyncio.gather(*tasks)
-    
-
-async def fetch_badges_old(user_id: str) -> list[dict]:
-    """
-    Given a Roblox user id, get the user's badge data.
-    """
-    url = f"https://badges.roblox.com/v1/users/{user_id}/badges?limit=100&sortOrder=Desc"
-    badges = []
-    cursor = None
-    while True:
-        params = {}
-        if cursor:
-            params['cursor'] = cursor
-
-        response = requests.get(url, params=params)
-        data = response.json()
-
-        for badge in data['data']:
-            badges.append(badge)
-            if PRINT_PROGRESS and len(badges) % BATCH_PER_PRINT == 0:
-                print(f"{len(badges)} badges for {user_id} requested.")
-
-        if data['nextPageCursor']:
-            cursor = data['nextPageCursor']
-        else:
-            break
-
-    return badges

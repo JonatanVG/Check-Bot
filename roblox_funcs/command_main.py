@@ -8,9 +8,11 @@ from roblox_funcs.fetch_badges import fetch_multiple_users_badges
 from roblox_funcs.fetch_award_dates import fetch_multiple_award_dates
 from roblox_funcs.plot_cumulative_badges import plot_cumulative_badges
 
-async def main(inter: discord.Interaction, usernames: list[str]):
+async def main(inter: discord.Interaction, usernames: list[str], type: str):
     notation = []
     img = None
+
+    await inter.response.send_message("Processing users. This may take between 1-10 minutes depending on each users inventory size.")
 
     print("fetching trello blacklist...")
     blacklist = get_trello_blacklist()
@@ -26,19 +28,21 @@ async def main(inter: discord.Interaction, usernames: list[str]):
 
     print("Fetching badges for all users...")
     badge_results = await fetch_multiple_users_badges(user_ids)
-
-    print("Fetching award dates for all users...")
-    award_date_results = await fetch_multiple_award_dates(badge_results)
-
     badges_map = {b["user_id"]: b["badges"] for b in badge_results}
+    for a in user_ids:
+        print(f"Badges counted for {a}: {len(badges_map.get(a, {}))}")
 
-    award_dates_map = {}
-    for i, user in enumerate(user_id_results):
-        user_id = user["id"]
-        if i < len(award_date_results):
-            award_dates_map[user_id] = award_date_results[i]
-        else:
-            award_dates_map[user_id] = []
+    if type == "B":
+        print("Fetching award dates for all users...")
+        award_date_results = await fetch_multiple_award_dates(badge_results)
+
+        award_dates_map = {}
+        for i, user in enumerate(user_id_results):
+            user_id = user["id"]
+            if i < len(award_date_results):
+                award_dates_map[user_id] = award_date_results[i]
+            else:
+                award_dates_map[user_id] = []
 
     for user_result in friend_results:
         user_id = user_result["user_id"]
@@ -56,10 +60,11 @@ async def main(inter: discord.Interaction, usernames: list[str]):
         following = user_info["following_count"]
         groups = user_info["groups_count"]
 
-        badge_dates = award_dates_map.get(user_id, [])
+        if type == "B":
+            badge_dates = award_dates_map.get(user_id, [])
 
-        img = plot_cumulative_badges(username, user_id, badge_dates)
-        print(f"{username} ({username}) has {len(badge_dates)} badge award dates recorded.")
+            img = plot_cumulative_badges(username, user_id, badge_dates)
+            print(f"{username} ({username}) has {len(badge_dates)} badge award dates recorded.")
 
         flagged = check_friends_against_blacklist(friends, blacklist)
 
