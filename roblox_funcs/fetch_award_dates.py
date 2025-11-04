@@ -18,7 +18,7 @@ async def fetch_award_dates(user_id: str, badges: list[dict], session, sem) -> l
             params = {"badgeIds": badge_ids[i:i + STEP]}
 
             # If we get a 429 status, wait and retry with some backoff
-            retry_after = 1
+            retry_after = 5
             while True:
                 try:
                     async with session.get(url, params=params) as response:
@@ -41,7 +41,8 @@ async def fetch_award_dates(user_id: str, badges: list[dict], session, sem) -> l
                         await asyncio.sleep(random.uniform(0.8, 1.3))
 
                         STEP = min(60, int(STEP * 1.1))
-                        retry_after = 2
+                        retry_after = 5
+                        await asyncio.sleep(1.5)
                         print(f"Success: STEP={STEP}, retry_after={retry_after}")
                         break
                 except Exception as e:
@@ -57,5 +58,7 @@ async def fetch_multiple_award_dates(user_badges: list[dict], limit=5):
             fetch_award_dates(user_data["user_id"], user_data["badges"], session, sem) 
             for user_data in user_badges if user_data.get("badges")
         ]
+        for task in tasks:
+            await asyncio.sleep(0.2)
         results = await asyncio.gather(*tasks, return_exceptions=False)
         return results

@@ -63,7 +63,7 @@ async def on_guild_remove(guild):
 import roblox_funcs.command_main as command_main
 @bot.tree.command(name="bgc_run", description="Runs a background check on the specified user(s).")
 @commands.is_owner()
-@app_commands.describe(type="Generate award date graph? (Significantly increases time to complete.)")
+@app_commands.describe(type="Generate award date graph? (Significantly increases time to complete. (+5 secs per 60 badges.))")
 @app_commands.choices(type = [
     app_commands.Choice(name="Yes", value="B"),
     app_commands.Choice(name="No", value="A")
