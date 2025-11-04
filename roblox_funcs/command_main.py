@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 from roblox_funcs.get_roblox_user_id import fetch_multiple_ids
 from roblox_funcs.get_friends import fetch_multiple_friends
@@ -11,6 +12,17 @@ from roblox_funcs.plot_cumulative_badges import plot_cumulative_badges
 async def main(inter: discord.Interaction, usernames: list[str], type: str):
     notation = []
     img = None
+
+    active = True
+    timer = 0
+
+    async def time_loop():
+        nonlocal timer
+        while active:
+            await asyncio.sleep(1)
+            timer += 1
+    
+    timer_task_obj = asyncio.create_task(time_loop())
 
     await inter.response.send_message("Processing users. This may take between 1-10 minutes depending on each users inventory size.")
 
@@ -98,7 +110,7 @@ async def main(inter: discord.Interaction, usernames: list[str], type: str):
         else:
             notation.append("🚫  No badges found.")
             print("🚫  No badges found.")
-            
+
         response = "\n".join(notation)
 
         if img:
@@ -108,4 +120,9 @@ async def main(inter: discord.Interaction, usernames: list[str], type: str):
             await inter.channel.send(response)
             
         notation = []
+
+    active = False
+    await timer_task_obj
+    await inter.channel.send(f"This request elapsed a total of {timer} seconds.")
+    
     print("\nAll users processed.")
