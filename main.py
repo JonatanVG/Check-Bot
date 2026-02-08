@@ -6,6 +6,9 @@ import os # Import os library
 from dotenv import load_dotenv # Change import dotenv to this instead.
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import requests
+import time
+import supabase
 ### End import libraries.
 
 load_dotenv() # Makes the code able to read the .env file.
@@ -18,7 +21,9 @@ from guild_funcs.guild_owner_only import guild_owner_only
 
 
 token = os.getenv("BOT_TOKEN") # Write this to access your bots token.
-
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+Supabase = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
 ### Import bot
 from bot_managment.bot_setup import bot
@@ -127,6 +132,24 @@ async def show_guilds(ctx, name: str = ""):
     await bot_managment.show_guilds.show_guilds(ctx, name)
 ### End of bot managment
 
+KOYEB_URL = ""
+def load_koyeb_url():
+    global KOYEB_URL
+    try:
+        KOYEB_URL = Supabase.table("KOYEB_URL").select("KOYEB_URL").execute().data[0]["KOYEB_URL"]
+        print(f"Koyeb URL loaded successfully: {KOYEB_URL}")
+    except Exception as e:
+        print(f"Failed to load Koyeb URL: {e}")
+
+def keep_alive():
+    while True:
+        try:
+            r = requests.get(KOYEB_URL, timeout=30)
+            print(f"Keep-alive ping successful: {r.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"Keep-alive ping failed: {e}")
+        time.sleep(300)  # Ping every 5 minutes
+
 def health_server():
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -138,5 +161,6 @@ def health_server():
     server.serve_forever()
 
 threading.Thread(target=health_server, daemon=True).start()
+threading.Thread(target=keep_alive, daemon=True).start()
 
 bot.run(token) # Runs the bot.
