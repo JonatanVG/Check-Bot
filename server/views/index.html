@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% set title = items
+    | selectattr("name", "equalto", "Title")
+    | map(attribute="content")
+    | first
+    | default("Default Title") %}
   <title>{{ title }}</title>
-  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>{{ title }}</h1>
-  <p>&nbsp;</p>
+  <h2>{{ title }}</h2>
+  <br/>
 
   <main>
     {% include 'partials/header.html' %}

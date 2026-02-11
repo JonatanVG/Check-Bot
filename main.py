@@ -177,6 +177,7 @@ logging.basicConfig(level=logging.INFO)
 threading.Thread(target=run_website, daemon=True).start()
 
 # Initialize and start keep-alive
+# keep_alive(koyeb_url)
 threading.Thread(target=keep_alive, args=(koyeb_url,), daemon=True).start()
 
 bot.run(token) # Runs the bot.

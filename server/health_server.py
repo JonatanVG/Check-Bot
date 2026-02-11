@@ -16,15 +16,12 @@ app = Flask(__name__)
 
 app.template_folder = 'views'
 
-app.static_folder = 'static'
-app.static_url_path = '/static'
-
 # Health check endpoint
 @app.route('/')
 def index():
   try:
     response = Supabase2.table('DBChecker website items')\
-      .select('*')\
+      .select('id, name, content')\
       .eq('page', 3)\
       .order('id', desc=False)\
       .execute()
@@ -34,8 +31,9 @@ def index():
       return jsonify({"error": "Database query failed"}), 500
     
     data = response.data
+    print("Raw data:", data)
     logger.info(f"Fetched {len(data)} items from Supabase for health check")
-    return render_template('index.html', title='IRF Checker Bot - Health Check', items=data)
+    return render_template('index.html', items=data)
   except Exception as e:
     logger.error(f"Error in health check endpoint: {e}")
     return jsonify({"error": "Internal server error"}), 500
@@ -49,7 +47,7 @@ def privacy_policy():
     .execute()
     
   data = response.data
-  return render_template('privacy-policy.html', title='Privacy Policy', items=data)
+  return render_template('privacy-policy.html', items=data)
 
 @app.route("/Terms-of-Service")
 def terms_of_service():
@@ -60,7 +58,7 @@ def terms_of_service():
     .execute()
 
   data = response.data
-  return render_template('terms-of-service.html', title='Terms of Service', items=data)
+  return render_template('terms-of-service.html', items=data)
 
 def run_website():
   print("Starting Flask website on port 8000...")
